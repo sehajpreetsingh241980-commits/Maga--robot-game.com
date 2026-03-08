@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maga robot Shooter - Global Leaderboard</title>
+
+<style>
+body {
+margin: 0;
+background: linear-gradient(135deg, #000000, #1a0033);
+display: flex;
+justify-content: center;
+align-items: center;
+min-height: 100vh;
+font-family: 'Arial', sans-serif;
+color: white;
+}
+
+#gameContainer {
+position: relative;
+width: 360px;
+height: 640px;
+}
+
+canvas {
+background: black;
+border: 3px solid cyan;
+touch-action: none;
+box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+#score {
+position: absolute;
+top: 10px;
+left: 10px;
+color: white;
+font-size: 20px;
+z-index: 10;
+text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+font-weight: bold;
+}
+
+#leaderboardBtn {
+position: absolute;
+top: 10px;
+right: 10px;
+background: gold;
+color: black;
+border: none;
+padding: 8px 15px;
+border-radius: 20px;
+font-size: 14px;
+font-weight: bold;
+cursor: pointer;
+z-index: 20;
+box-shadow: 0 0 15px gold;
+}
+
+#leaderboardBtn:hover {
+transform: scale(1.05);
+background: #ffd700;
+}
+
+#restartBtn {
+position: absolute;
+bottom: 50px;
+left: 50%;
+transform: translateX(-50%);
+background: #4CAF50;
+color: white;
+border: none;
+padding: 10px 30px;
+font-size: 18px;
+border-radius: 25px;
+display: none;
+cursor: pointer;
+z-index: 20;
+box-shadow: 0 4px 15px rgba(76,175,80,0.3);
+}
+
+/* Leaderboard Modal */
+#leaderboardModal {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0, 0, 0, 0.9);
+display: none;
+justify-content: center;
+align-items: center;
+z-index: 1000;
+backdrop-filter: blur(5px);
+}
+
+.leaderboard-content {
+background: linear-gradient(135deg, #1a0033, #000066);
+width: 90%;
+max-width: 500px;
+border-radius: 20px;
+padding: 20px;
+border: 3px solid gold;
+box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+from {
+transform: translateY(-50px);
+opacity: 0;
+}
+to {
+transform: translateY(0);
+opacity: 1;
+}
+}
+
+.leaderboard-header {
+text-align: center;
+margin-bottom: 20px;
+}
+
+.leaderboard-header h2 {
+color: gold;
+font-size: 28px;
+margin: 0;
+text-shadow: 0 0 10px gold;
+}
+
+.leaderboard-header h3 {
+color: cyan;
+margin: 5px 0 0 0;
+}
+
+.leaderboard-stats {
+display: flex;
+justify-content: space-around;
+margin: 20px 0;
+padding: 15px;
+background: rgba(255,255,255,0.1);
+border-radius: 15px;
+}
+
+.stat {
+text-align: center;
+}
+
+.stat-value {
+font-size: 24px;
+font-weight: bold;
+color: gold;
+}
+
+.stat-label {
+font-size: 12px;
+color: #ccc;
+}
+
+.leaderboard-table {
+width: 100%;
+border-collapse: collapse;
+margin: 20px 0;
+}
+
+.leaderboard-table th {
+background: rgba(255,215,0,0.3);
+padding: 10px;
+color: gold;
+font-size: 14px;
+}
+
+.leaderboard-table td {
+padding: 10px;
+text-align: center;
+border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.leaderboard-table tr:hover {
+background: rgba(255,255,255,0.1);
+}
+
+.rank-1 {
+color: gold;
+font-weight: bold;
+}
+
+.rank-2 {
+color: silver;
+font-weight: bold;
+}
+
+.rank-3 {
+color: #cd7f32;
+font-weight: bold;
+}
+
+.player-avatar {
+font-size: 24px;
+}
+
+.close-btn {
+background: gold;
+color: black;
+border: none;
+padding: 12px 30px;
+border-radius: 25px;
+font-size: 16px;
+font-weight: bold;
+cursor: pointer;
+display: block;
+margin: 20px auto 0;
+width: fit-content;
+}
+
+.close-btn:hover {
+transform: scale(1.05);
+box-shadow: 0 0 15px gold;
+}
+
+#nameInputModal {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0, 0, 0, 0.9);
+display: none;
+justify-content: center;
+align-items: center;
+z-index: 1100;
+}
+
+.name-input-content {
+background: linear-gradient(135deg, #1a0033, #000066);
+padding: 30px;
+border-radius: 20px;
+border: 3px solid cyan;
+text-align: center;
+width: 300px;
+}
+
+.name-input-content h2 {
+color: gold;
+margin-top: 0;
+}
+
+.name-input-content input {
+width: 90%;
+padding: 12px;
+margin: 20px 0;
+border: 2px solid cyan;
+border-radius: 10px;
+background: rgba(0,0,0,0.5);
+color: white;
+font-size: 16px;
+text-align: center;
+}
+
+.name-input-content input:focus {
+outline: none;
+box-shadow: 0 0 10px cyan;
+}
+
+.name-input-buttons {
+display: flex;
+gap: 10px;
+justify-content: center;
+}
+
+.name-input-buttons button {
+padding: 10px 20px;
+border: none;
+border-radius: 20px;
+font-size: 14px;
+font-weight: bold;
+cursor: pointer;
+}
+
+.submit-btn {
+background: #4CAF50;
+color: white;
+}
+
+.cancel-btn {
+background: #666;
+color: white;
+}
+
+.floating-score {
+position: absolute;
+color: gold;
+font-weight: bold;
+font-size: 20px;
+pointer-events: none;
+z-index: 30;
+animation: floatUp 1s ease-out forwards;
+text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+@keyframes floatUp {
+0% { opacity: 1; transform: translateY(0); }
+100% { opacity: 0; transform: translateY(-50px); }
+}
+
+#worldRecord {
+position: absolute;
+top: 50px;
+left: 10px;
+color: gold;
+font-size: 14px;
+z-index: 10;
+text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+</style>
+</head>
+
+<body>
+<div id="gameContainer">
+<div id="score">Score: 0</div>
+<div id="worldRecord">🏆 World Record: 0</div>
+<button id="leaderboardBtn" onclick="showLeaderboard()">🏆 LEADERBOARD</button>
+<button id="restartBtn" onclick="restartGame()">PLAY AGAIN</button>
+<canvas id="game" width="360" height="640"></canvas>
+</div>
+
+<!-- Leaderboard Modal -->
+<div id="leaderboardModal">
+<div class="leaderboard-content">
+<div class="leaderboard-header">
+<h2>🏆 GLOBAL LEADERBOARD 🏆</h2>
+<h3>Top Players Worldwide</h3>
+</div>
+
+<div class="leaderboard-stats">
+<div class="stat">
+<div class="stat-value" id="totalPlayers">0</div>
+<div class="stat-label">Total Players</div>
+</div>
+<div class="stat">
+<div class="stat-value" id="totalScore">0</div>
+<div class="stat-label">Total Score</div>
+</div>
+<div class="stat">
+<div class="stat-value" id="avgScore">0</div>
+<div class="stat-label">Average</div>
+</div>
+</div>
+
+<table class="leaderboard-table">
+<thead>
+<tr>
+<th>Rank</th>
+<th>Player</th>
+<th>Score</th>
+<th>Date</th>
+</tr>
+</thead>
+<tbody id="leaderboardBody">
+<!-- Filled by JavaScript -->
+</tbody>
+</table>
+
+<button class="close-btn" onclick="hideLeaderboard()">CLOSE</button>
+</div>
+</div>
+
+<!-- Name Input Modal for High Scores -->
+<div id="nameInputModal">
+<div class="name-input-content">
+<h2>🎉 NEW HIGH SCORE! 🎉</h2>
+<p style="color: cyan;">Your score: <span id="newHighScore">0</span></p>
+<p>Enter your name for the leaderboard:</p>
+<input type="text" id="playerName" maxlength="15" placeholder="YOUR NAME" autocomplete="off">
+<div class="name-input-buttons">
+<button class="submit-btn" onclick="submitHighScore()">SUBMIT</button>
+<button class="cancel-btn" onclick="cancelNameInput()">SKIP</button>
+</div>
+</div>
+</div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const scoreElement = document.getElementById("score");
+const worldRecordElement = document.getElementById("worldRecord");
+const restartBtn = document.getElementById("restartBtn");
+
+let player = {x:160, y:560, w:40, h:40};
+let bullets = [];
+let enemies = [];
+let stars = [];
+let floatingScores = [];
+let score = 0;
+let gameActive = true;
+let gameOver = false;
+
+// Leaderboard data
+let leaderboard = [];
+let currentPlayerName = '';
+
+// Load leaderboard from localStorage
+function loadLeaderboard() {
+const saved = localStorage.getItem('magaRobotLeaderboard');
+if (saved) {
+leaderboard = JSON.parse(saved);
+} else {
+// Default data
+leaderboard = [
+{ name: '🚀 COSMIC', score: 1500, date: '2024-01-15' },
+{ name: '⭐ STAR', score: 1200, date: '2024-01-14' },
+{ name: '👽 NOVA', score: 1000, date: '2024-01-13' },
+{ name: '🤖 MECHA', score: 800, date: '2024-01-12' },
+{ name: '🦸 GALAXY', score: 600, date: '2024-01-11' }
+];
+saveLeaderboard();
+}
+updateWorldRecord();
+}
+
+// Save leaderboard to localStorage
+function saveLeaderboard() {
+// Sort by score descending
+leaderboard.sort((a, b) => b.score - a.score);
+// Keep only top 50
+leaderboard = leaderboard.slice(0, 50);
+localStorage.setItem('magaRobotLeaderboard', JSON.stringify(leaderboard));
+updateWorldRecord();
+}
+
+// Update world record display
+function updateWorldRecord() {
+if (leaderboard.length > 0) {
+worldRecordElement.textContent = `🏆 World Record: ${leaderboard[0].score}`;
+}
+}
+
+// Check if score is in top 10
+function isTop10(score) {
+return leaderboard.length < 10 || score > leaderboard[leaderboard.length - 1].score;
+}
+
+// Show leaderboard modal
+function showLeaderboard() {
+updateLeaderboardDisplay();
+document.getElementById('leaderboardModal').style.display = 'flex';
+}
+
+// Hide leaderboard modal
+function hideLeaderboard() {
+document.getElementById('leaderboardModal').style.display = 'none';
+}
+
+// Update leaderboard display
+function updateLeaderboardDisplay() {
+const tbody = document.getElementById('leaderboardBody');
+let html = '';
+
+// Calculate stats
+const totalPlayers = leaderboard.length;
+const totalScore = leaderboard.reduce((sum, entry) => sum + entry.score, 0);
+const avgScore = totalPlayers > 0 ? Math.round(totalScore / totalPlayers) : 0;
+
+document.getElementById('totalPlayers').textContent = totalPlayers;
+document.getElementById('totalScore').textContent = totalScore;
+document.getElementById('avgScore').textContent = avgScore;
+
+// Display top 20
+leaderboard.slice(0, 20).forEach((entry, index) => {
+let rankClass = '';
+let rankSymbol = '';
+if (index === 0) {
+rankClass = 'rank-1';
+rankSymbol = '🥇';
+} else if (index === 1) {
+rankClass = 'rank-2';
+rankSymbol = '🥈';
+} else if (index === 2) {
+rankClass = 'rank-3';
+rankSymbol = '🥉';
+} else {
+rankSymbol = `${index + 1}.`;
+}
+
+html += `
+<tr>
+<td class="${rankClass}">${rankSymbol}</td>
+<td>${entry.name}</td>
+<td class="${rankClass}">${entry.score}</td>
+<td>${entry.date}</td>
+</tr>
+`;
+});
+
+tbody.innerHTML = html;
+}
+
+// Show name input for high score
+function showNameInput() {
+if (isTop10(score)) {
+document.getElementById('newHighScore').textContent = score;
+document.getElementById('nameInputModal').style.display = 'flex';
+} else {
+restartGame();
+}
+}
+
+// Submit high score
+function submitHighScore() {
+const playerName = document.getElementById('playerName').value.trim().toUpperCase();
+if (playerName === '') {
+alert('Please enter your name!');
+return;
+}
+
+// Add avatar emoji based on first letter
+const avatars = ['🚀', '⭐', '👽', '🤖', '🦸', '👾', '🌠', '☄️', '🛸', '🌌'];
+const avatar = avatars[playerName.charCodeAt(0) % avatars.length];
+const displayName = avatar + ' ' + playerName;
+
+// Get current date
+const today = new Date();
+const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+// Add to leaderboard
+leaderboard.push({
+name: displayName,
+score: score,
+date: dateStr
+});
+
+// Sort and save
+leaderboard.sort((a, b) => b.score - a.score);
+leaderboard = leaderboard.slice(0, 50);
+saveLeaderboard();
+
+document.getElementById('nameInputModal').style.display = 'none';
+document.getElementById('playerName').value = '';
+restartGame();
+}
+
+function cancelNameInput() {
+document.getElementById('nameInputModal').style.display = 'none';
+document.getElementById('playerName').value = '';
+restartGame();
+}
+
+// Create floating score animation
+function createFloatingScore(x, y, points) {
+floatingScores.push({
+x: x,
+y: y,
+points: points,
+life: 1.0
+});
+}
+
+// Game intervals
+let fireInterval;
+let spawnInterval;
+
+// Create stars
+for(let i = 0; i < 60; i++) {
+stars.push({
+x: Math.random() * 360,
+y: Math.random() * 640,
+speed: 0.5 + Math.random() * 1.5
+});
+}
+
+// Touch control
+canvas.addEventListener("touchmove", e => {
+if(!gameActive) return;
+e.preventDefault();
+let rect = canvas.getBoundingClientRect();
+let touchX = e.touches[0].clientX - rect.left - 20;
+player.x = Math.max(0, Math.min(320, touchX));
+});
+
+// Mouse control
+canvas.addEventListener("mousemove", e => {
+if(!gameActive) return;
+let rect = canvas.getBoundingClientRect();
+let mouseX = e.clientX - rect.left - 20;
+player.x = Math.max(0, Math.min(320, mouseX));
+});
+
+function startGame() {
+gameActive = true;
+gameOver = false;
+score = 0;
+enemies = [];
+bullets = [];
+floatingScores = [];
+player.x = 160;
+updateScore();
+
+if (fireInterval) clearInterval(fireInterval);
+if (spawnInterval) clearInterval(spawnInterval);
+
+// Auto fire
+fireInterval = setInterval(() => {
+if(gameActive) {
+bullets.push({x: player.x + 18, y: player.y});
+}
+}, 350);
+
+// Spawn enemies
+spawnInterval = setInterval(() => {
+if(gameActive) {
+let x = Math.random() * 320;
+let speed = 3 + Math.floor(score / 20);
+enemies.push({
+x: x,
+y: -40,
+speed: Math.min(speed, 8) // Cap speed at 8
+});
+}
+}, 900);
+}
+
+function updateScore() {
+scoreElement.textContent = `Score: ${score}`;
+}
+
+function game() {
+if(!gameActive && !gameOver) {
+requestAnimationFrame(game);
+return;
+}
+
+// Clear canvas
+ctx.fillStyle = "black";
+ctx.fillRect(0, 0, 360, 640);
+
+// Animated stars
+ctx.fillStyle = "white";
+stars.forEach(s => {
+s.y += s.speed;
+if (s.y > 640) {
+s.y = 0;
+s.x = Math.random() * 360;
+}
+let brightness = Math.random() * 0.5 + 0.5;
+ctx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
+ctx.fillRect(s.x, s.y, 2, 2);
+});
+
+if(gameActive) {
+// Player ship (improved design)
+ctx.shadowColor = "cyan";
+ctx.shadowBlur = 15;
+ctx.fillStyle = "cyan";
+ctx.beginPath();
+ctx.moveTo(player.x + 20, player.y);
+ctx.lineTo(player.x, player.y + 40);
+ctx.lineTo(player.x + 40, player.y + 40);
+ctx.closePath();
+ctx.fill();
+
+// Engine glow
+ctx.shadowBlur = 20;
+ctx.fillStyle = "orange";
+ctx.fillRect(player.x + 15, player.y + 40, 10, 10);
+ctx.shadowBlur = 0;
+ctx.shadowColor = "transparent";
+
+// Bullets with trail
+bullets.forEach((b, i) => {
+b.y -= 12;
+ctx.shadowBlur = 10;
+ctx.shadowColor = "yellow";
+ctx.fillStyle = "yellow";
+ctx.fillRect(b.x, b.y, 4, 15);
+// Trail effect
+ctx.fillStyle = "orange";
+ctx.fillRect(b.x - 1, b.y + 10, 6, 5);
+});
+
+// Enemies
+enemies.forEach((e, i) => {
+e.y += e.speed;
+
+// Enemy with glow
+ctx.shadowBlur = 15;
+ctx.shadowColor = "red";
+
+// Main body
+let gradient = ctx.createLinearGradient(e.x, e.y, e.x + 40, e.y + 40);
+gradient.addColorStop(0, '#ff4444');
+gradient.addColorStop(1, '#880000');
+ctx.fillStyle = gradient;
+ctx.fillRect(e.x, e.y, 40, 40);
+
+// Eyes
+ctx.shadowBlur = 5;
+ctx.fillStyle = "white";
+ctx.fillRect(e.x + 8, e.y + 10, 8, 8);
+ctx.fillRect(e.x + 24, e.y + 10, 8, 8);
+ctx.fillStyle = "#00ffff";
+ctx.fillRect(e.x + 10, e.y + 12, 4, 4);
+ctx.fillRect(e.x + 26, e.y + 12, 4, 4);
+
+// Check game over
+if(e.y + 40 >= 640) {
+gameActive = false;
+gameOver = true;
+restartBtn.style.display = "block";
+showNameInput();
+}
+
+// Collision detection
+bullets.forEach((b, bi) => {
+if(b.x < e.x + 40 && b.x + 4 > e.x && 
+   b.y < e.y + 40 && b.y + 15 > e.y) {
+enemies.splice(i, 1);
+bullets.splice(bi, 1);
+score += 10;
+updateScore();
+createFloatingScore(e.x + 20, e.y, "+10");
+}
+});
+});
+
+// Remove off-screen bullets
+bullets = bullets.filter(b => b.y > -30);
+
+// Draw floating scores
+floatingScores = floatingScores.filter(fs => {
+fs.life -= 0.02;
+fs.y -= 1.5;
+ctx.shadowBlur = 10;
+ctx.shadowColor = "gold";
+ctx.fillStyle = `rgba(255, 215, 0, ${fs.life})`;
+ctx.font = "bold 20px Arial";
+ctx.textAlign = "center";
+ctx.fillText(`+${fs.points}`, fs.x, fs.y);
+return fs.life > 0;
+});
+
+ctx.shadowBlur = 0;
+} else {
+// Game over screen
+ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+ctx.fillRect(0, 0, 360, 640);
+ctx.fillStyle = "white";
+ctx.font = "bold 36px Arial";
+ctx.textAlign = "center";
+ctx.fillText("GAME OVER", 180, 250);
+ctx.font = "24px Arial";
+ctx.fillText(`Score: ${score}`, 180, 320);
+
+if (isTop10(score)) {
+ctx.fillStyle = "gold";
+ctx.font = "20px Arial";
+ctx.fillText("🏆 TOP 10 SCORE! 🏆", 180, 380);
+}
+}
+
+requestAnimationFrame(game);
+}
+
+function restartGame() {
+restartBtn.style.display = "none";
+startGame();
+}
+
+// Initialize
+loadLeaderboard();
+startGame();
+game();
+
+</script>
+
+</body>
+</html>
